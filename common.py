@@ -22,6 +22,7 @@ def safecopy(src, dstdir):
 
     shutil.copy2(src, dst)
 
+
 def read_docs_folder(root):
     extensions = ['pdf', 'mobi', 'prc', 'txt', 'tpz', 'azw1', 'azw', 'manga', 'azw2', 'azw3']
     file_paths = []
@@ -54,5 +55,8 @@ def read_docs_folder(root):
 
     return output
 
-
+def get_fileproperties(files, filepath):
+    result = list(filter(lambda x: x["path"] == filepath, files))
+    assert len(result) == 1, "multiple files with same paths. strange."
+    return result[0]
 
