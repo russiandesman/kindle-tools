@@ -18,10 +18,10 @@ KINDLEROOT = '/mnt/us'
 
 class Sectionizer:
     def __init__(self, filename, perm):
-        self.f = file(filename, perm)
+        self.f = open(filename, perm)
         header = self.f.read(78)
         self.ident = header[0x3C:0x3C+8]
-        if self.ident != 'BOOKMOBI':
+        if self.ident != b'BOOKMOBI':
             raise ValueError('invalid file format')
         num_sections, = struct.unpack_from('>H', header, 76)
         sections = self.f.read(num_sections*8)
@@ -203,6 +203,7 @@ class Topaz(object):
             self.metadata[tag] = metadata
 
 utf8 = codecs.getdecoder("utf-8")
+ascii = codecs.getdecoder("ASCII")
 
 class Ebook():
     def __init__(self, path):
@@ -222,15 +223,15 @@ class Ebook():
                 if 100 in self.meta.exth:
                     self.author = utf8(self.meta.exth[100])[0]
                 if 113 in self.meta.exth:
-                    self.asin = self.meta.exth[113]
+                    self.asin = ascii(self.meta.exth[113])[0]
                 if 501 in self.meta.exth:
-                    self.type = self.meta.exth[501]
+                    self.type = ascii(self.meta.exth[501])[0]
                 if 503 in self.meta.exth:
                     self.title = utf8(self.meta.exth[503])[0]
                 if 115 in self.meta.exth:
                     self.sample = self.meta.exth[115] == u"\x00\x00\x00\x01"
             else:
-                print "\nMetadata read error:", path
+                print("\nMetadata read error:", path)
         elif ext in ['tpz', 'azw1']:
             self.meta = Topaz(path)
             if self.meta.title:
@@ -240,7 +241,7 @@ class Ebook():
                 if self.meta.type:
                     self.type = self.meta.type
             else:
-                print "\nTopaz metadata read error:", path
+                print("\nTopaz metadata read error:", path)
         elif ext in ['azw2']:
             self.meta = Kindlet(path)
             if self.meta.title:
@@ -250,11 +251,11 @@ class Ebook():
                 self.type = 'AZW2'
             else:
                 # Couldn't get an ASIN, developper app? We'll use the hash instead, which is what the Kindle itself does, so no harm done.
-                print "\nKindlet Metadata read error, assuming developper app:", path
+                print("\nKindlet Metadata read error, assuming developper app:", path)
     
     # Returns a SHA-1 hash
     def get_hash(self,path):
-        print repr(path)
+        print(repr(path))
         path = path.encode('utf-8')
         return hashlib.sha1(path).hexdigest()
 
