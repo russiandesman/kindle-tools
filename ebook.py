@@ -202,6 +202,21 @@ class Topaz(object):
             offset += md_len
             self.metadata[tag] = metadata
 
+class Pdf():
+    def __init__(self, path):
+        # we know the extension, so just drop it
+        filename_ext = os.path.basename(path)
+        filename = os.path.splitext(filename_ext)[0]
+
+        self.title = filename
+        self.asin = None
+        pdf_asin_finder = re.compile("(.*)-asin_(.*)")
+        pdf_asin_match = pdf_asin_finder.match(filename)
+        if pdf_asin_match:
+            self.title = pdf_asin_match.group(1)
+            self.asin = pdf_asin_match.group(2)
+
+
 utf8 = codecs.getdecoder("utf-8")
 ascii = codecs.getdecoder("ASCII")
 
@@ -252,6 +267,11 @@ class Ebook():
             else:
                 # Couldn't get an ASIN, developper app? We'll use the hash instead, which is what the Kindle itself does, so no harm done.
                 print("\nKindlet Metadata read error, assuming developper app:", path)
+        elif ext in ['pdf']:
+            self.meta = Pdf(path)
+            self.title = "PDF: {}".format(self.meta.title)
+            self.asin = self.meta.asin
+            self.type = "PDOC"
     
     # Returns a SHA-1 hash
     def get_hash(self,path):
