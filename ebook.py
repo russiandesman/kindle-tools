@@ -13,6 +13,7 @@ import re
 import codecs
 import os
 import hashlib
+import json
 
 KINDLEROOT = '/mnt/us'
 
@@ -219,11 +220,13 @@ class Pdf():
 
 utf8 = codecs.getdecoder("utf-8")
 ascii = codecs.getdecoder("ASCII")
+cp850 = codecs.getdecoder("cp850")
+
 
 class Ebook():
     def __init__(self, path):
         self.path = self.get_kindle_path(path)
-        self.hash = self.get_hash(path)
+        self.hash = self.get_hash(self.path)
         self.title = None
         self.meta = None
         self.asin = None
@@ -236,15 +239,22 @@ class Ebook():
             if self.meta.title:
                 self.title = self.meta.title
                 if 100 in self.meta.exth:
-                    self.author = utf8(self.meta.exth[100])[0]
+                    try:
+                        self.author = utf8(self.meta.exth[100])[0]
+                    except:
+                        self.author = cp850(self.meta.exth[100])[0]
                 if 113 in self.meta.exth:
                     self.asin = ascii(self.meta.exth[113])[0]
                 if 501 in self.meta.exth:
                     self.type = ascii(self.meta.exth[501])[0]
                 if 503 in self.meta.exth:
-                    self.title = utf8(self.meta.exth[503])[0]
+                    try:
+                        self.title = utf8(self.meta.exth[503])[0]
+                    except:
+                        self.title = cp850(self.meta.exth[503])[0]
                 if 115 in self.meta.exth:
                     self.sample = self.meta.exth[115] == u"\x00\x00\x00\x01"
+
             else:
                 print("\nMetadata read error:", path)
         elif ext in ['tpz', 'azw1']:
