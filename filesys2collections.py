@@ -7,6 +7,7 @@ import json
 import glob
 
 import common
+from ebook import Ebook
 
 EPILOG = r'''
 Examples
@@ -14,7 +15,7 @@ Examples
     collections2filesys.py --output output --input kindleroot 
 '''
            
-def create_collections_by_filesystem(root, files):
+def create_collections_by_filesystem(root):
     all_dirs = glob.glob(root + "/documents/**/*/", recursive=True)
     toplevel_dirs = glob.glob(root + "/documents/*/")
     if all_dirs != toplevel_dirs:
@@ -30,8 +31,8 @@ def create_collections_by_filesystem(root, files):
         collections[collection_name] = {"items": [], "lastaccess" : 0}
         filepaths = glob.glob(directory + "/*")
         for filepath in filepaths:
-            props = common.get_fileproperties(files, filepath)
-            collections[collection_name]["items"] += ["*" + props["hash"]]
+            e = Ebook(filepath)
+            collections[collection_name]["items"] += [e.fileident()]
 
     return collections
 
@@ -53,11 +54,7 @@ def main():
 
     print("taking kindle filesystem from %s" % args.root)
 
-    files = common.read_docs_folder(args.root)
-    
-#    print(json.dumps(files, sort_keys=True, indent=4))
-
-    collections = create_collections_by_filesystem(args.root, files)
+    collections = create_collections_by_filesystem(args.root)
 
 #    print(json.dumps(collections, sort_keys=True, indent=4))
 
