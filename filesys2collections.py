@@ -6,7 +6,6 @@ import argparse
 import json
 import glob
 
-import common
 from ebook import Ebook
 
 EPILOG = r'''
