@@ -218,9 +218,15 @@ class Pdf():
             self.asin = pdf_asin_match.group(2)
 
 
-utf8 = codecs.getdecoder("utf-8")
-ascii = codecs.getdecoder("ASCII")
-cp850 = codecs.getdecoder("cp850")
+def get_str(bytes):
+    utf8 = codecs.getdecoder("utf-8")
+    cp850 = codecs.getdecoder("cp850")
+    try:
+        result = utf8(bytes)[0]
+    except:
+        result = cp850(bytes)[0]
+
+    return result
 
 
 class Ebook():
@@ -237,21 +243,15 @@ class Ebook():
         if ext in ['mobi', 'azw', 'azw3']:
             self.meta = Mobi(path)
             if self.meta.title:
-                self.title = self.meta.title
+                self.title = get_str(self.meta.title)
                 if 100 in self.meta.exth:
-                    try:
-                        self.author = utf8(self.meta.exth[100])[0]
-                    except:
-                        self.author = cp850(self.meta.exth[100])[0]
+                    self.author = get_str(self.meta.exth[100])
                 if 113 in self.meta.exth:
-                    self.asin = ascii(self.meta.exth[113])[0]
+                    self.asin = get_str(self.meta.exth[113])
                 if 501 in self.meta.exth:
-                    self.type = ascii(self.meta.exth[501])[0]
+                    self.type = get_str(self.meta.exth[501])
                 if 503 in self.meta.exth:
-                    try:
-                        self.title = utf8(self.meta.exth[503])[0]
-                    except:
-                        self.title = cp850(self.meta.exth[503])[0]
+                    self.title = get_str(self.meta.exth[503])
                 if 115 in self.meta.exth:
                     self.sample = self.meta.exth[115] == u"\x00\x00\x00\x01"
 
@@ -279,13 +279,15 @@ class Ebook():
                 print("\nKindlet Metadata read error, assuming developper app:", path)
         elif ext in ['pdf']:
             self.meta = Pdf(path)
-            self.title = "PDF: {}".format(self.meta.title)
+            self.title = self.meta.title
             self.asin = self.meta.asin
             self.type = "PDOC"
+        else:
+            # just take the filename without extension
+            self.title = os.path.splitext(os.path.basename(path))[0]
     
     # Returns a SHA-1 hash
     def get_hash(self,path):
-        print(repr(path))
         path = path.encode('utf-8')
         return hashlib.sha1(path).hexdigest()
 
