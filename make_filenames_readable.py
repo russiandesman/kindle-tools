@@ -21,12 +21,21 @@ def rename_files(root):
         ext = os.path.splitext(filepath)[1]
         directory = os.path.dirname(filepath)
         e = Ebook(filepath)
-        title = e.title
-        author = e.author if e.author else "Unknown"
-        new_filename = u"[{}]-{}".format(author, title)
+        if e.author:
+            new_filename = u"[{}]-{}".format(e.author, e.title)
+        else:
+            new_filename = e.title
+        #make the filename appropriate for FAT filesystem
         new_filename = new_filename.replace(" ", "_")
         new_filename = new_filename.replace("/", "_")
         new_filename = new_filename.replace("\\", "_")
+        new_filename = new_filename.replace("*", "_")
+        new_filename = new_filename.replace("?", "_")
+        new_filename = new_filename.replace('"', "_")
+        new_filename = new_filename.replace("'", "_")
+        new_filename = new_filename.replace(":", "_")
+        new_filename = new_filename.replace("|", "_")
+        new_filename = new_filename.replace("!", "_")
         new_path = os.path.join(directory, new_filename + ext)
         os.rename(filepath, new_path)
 
