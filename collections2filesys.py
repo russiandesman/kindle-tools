@@ -14,8 +14,6 @@ Examples
     collections2filesys.py --output output --input kindleroot 
 '''
 
-ROOTINVARIANT = '/mnt/us'
-
 def resolve(item, kindle_files):
     asin_re = re.compile("#(.*)\^.*")
     hash_re = re.compile("\*([a-z0-9]{40})")
@@ -42,7 +40,6 @@ def resolve_all(items, kindle_files):
     for item in items:
         result += [resolve(item, kindle_files)]
     return result
-
 
 def read_collections_json(root, kindle_files):
     try:

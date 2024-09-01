@@ -229,6 +229,13 @@ def get_str(bytes):
     return result
 
 
+def match_extension(path, exts):
+    for ext in exts:
+        if re.search(rf".*\.{ext}$", path, re.IGNORECASE):
+            return f".{ext}"
+    return ""
+
+
 class Ebook():
     def __init__(self, path):
         self.path = self.get_kindle_path(path)
@@ -239,8 +246,8 @@ class Ebook():
         self.type = None
         self.author = None
         self.sample = False
-        ext = os.path.splitext(path)[1][1:].lower()
-        if ext in ['mobi', 'azw', 'azw3']:
+        self.ext = match_extension(path, ['mobi', 'azw', 'azw3', 'mobi.prc'])
+        if self.ext:
             self.meta = Mobi(path)
             if self.meta.title:
                 self.title = get_str(self.meta.title)
@@ -254,10 +261,11 @@ class Ebook():
                     self.title = get_str(self.meta.exth[503])
                 if 115 in self.meta.exth:
                     self.sample = self.meta.exth[115] == u"\x00\x00\x00\x01"
-
             else:
                 print("\nMetadata read error:", path)
-        elif ext in ['tpz', 'azw1']:
+            return
+        self.ext = match_extension(path, ['tpz', 'azw1'])
+        if self.ext:
             self.meta = Topaz(path)
             if self.meta.title:
                 self.title = self.meta.title
@@ -267,7 +275,9 @@ class Ebook():
                     self.type = self.meta.type
             else:
                 print("\nTopaz metadata read error:", path)
-        elif ext in ['azw2']:
+            return
+        self.ext = match_extension(path, ['azw2'])
+        if self.ext:
             self.meta = Kindlet(path)
             if self.meta.title:
                 self.title = self.meta.title
@@ -277,14 +287,16 @@ class Ebook():
             else:
                 # Couldn't get an ASIN, developper app? We'll use the hash instead, which is what the Kindle itself does, so no harm done.
                 print("\nKindlet Metadata read error, assuming developper app:", path)
-        elif ext in ['pdf']:
+            return
+        self.ext = match_extension(path, ['pdf'])
+        if self.ext:
             self.meta = Pdf(path)
             self.title = self.meta.title
             self.asin = self.meta.asin
             self.type = "PDOC"
-        else:
-            # just take the filename without extension
-            self.title = os.path.splitext(os.path.basename(path))[0]
+            return
+        # just take the filename with extension as a last resort
+        self.title = os.path.basename(path)
     
     # Returns a SHA-1 hash
     def get_hash(self,path):

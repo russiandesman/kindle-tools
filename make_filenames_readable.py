@@ -18,24 +18,16 @@ Examples
 def rename_files(root):
     all_files = glob.glob(root + "/documents/**/*.*", recursive=True)
     for filepath in all_files:
-        ext = os.path.splitext(filepath)[1]
         directory = os.path.dirname(filepath)
         e = Ebook(filepath)
+        ext = e.ext
         if e.author:
-            new_filename = u"[{}]-{}".format(e.author, e.title)
+            new_filename = f"[{e.author}]-{e.author, e.title}"
         else:
             new_filename = e.title
         #make the filename appropriate for FAT filesystem
-        new_filename = new_filename.replace(" ", "_")
-        new_filename = new_filename.replace("/", "_")
-        new_filename = new_filename.replace("\\", "_")
-        new_filename = new_filename.replace("*", "_")
-        new_filename = new_filename.replace("?", "_")
-        new_filename = new_filename.replace('"', "_")
-        new_filename = new_filename.replace("'", "_")
-        new_filename = new_filename.replace(":", "_")
-        new_filename = new_filename.replace("|", "_")
-        new_filename = new_filename.replace("!", "_")
+        xlat_table = str.maketrans(" /\\*?\"':|!", "__________")
+        new_filename = new_filename.translate(xlat_table)
         new_path = os.path.join(directory, new_filename + ext)
         os.rename(filepath, new_path)
 
